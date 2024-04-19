@@ -1,5 +1,6 @@
 package org.mathieu.cleanrmapi.ui.screens.characters
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -46,115 +48,157 @@ import org.mathieu.cleanrmapi.ui.core.theme.Purple40
 private typealias UIState = CharactersState
 private typealias UIAction = CharactersAction
 
-@Composable
+@Composable //Décrit la structure de l'interface utilisateur.
 fun CharactersScreen(navController: NavController) {
+    // Création d'une instance du ViewModel associé à cet écran
     val viewModel: CharactersViewModel = viewModel()
+
+    // Récupération de l'état actuel du ViewModel en tant que State
     val state by viewModel.state.collectAsState()
 
+    // Effet lancé au démarrage de cette composable
     LaunchedEffect(viewModel) {
+        // Observation des événements émis par le ViewModel
         viewModel.events
             .onEach { event ->
+                // Si un événement de navigation vers les détails d'un personnage est émis,
+                // naviguer vers l'écran des détails correspondant
                 if (event is Destination.CharacterDetails)
                     navController.navigate(destination = event)
-            }.collect()
+            }
+            // Collecte des événements
+            .collect()
     }
 
+    // Affichage du contenu de l'écran en passant l'état actuel et la fonction de gestion des actions
     CharactersContent(
         state = state,
         onAction = viewModel::handleAction
     )
-
 }
 
-
+// Cette annotation supprime les avertissements de l'IDE concernant les paramètres de lambda non utilisés
+@SuppressLint("UnusedContentLambdaTargetStateParameter")
+// Cette annotation indique l'utilisation de fonctionnalités expérimentales de Jetpack Compose
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+// Définition de la fonction composable CharactersContent
 @Composable
 private fun CharactersContent(
+    // État de l'interface utilisateur par défaut
     state: UIState = UIState(),
+    // Fonction pour gérer les actions de l'interface utilisateur
     onAction: (UIAction) -> Unit = { }
 ) = Scaffold(topBar = {
+    // Barre supérieure affichant le titre "Characters"
     Text(
         modifier = Modifier
-            .background(Purple40)
-            .padding(16.dp)
-            .fillMaxWidth(),
-        text = "Characters",
-        textAlign = TextAlign.Center,
-        color = Color.White,
-        fontSize = 16.sp,
-        fontWeight = FontWeight.Medium
+            .background(Purple40) // Couleur d'arrière-plan
+            .padding(16.dp) // Marge intérieure
+            .fillMaxWidth(), // Remplissage de la largeur maximale
+        text = "Characters", // Texte affiché
+        textAlign = TextAlign.Center, // Alignement du texte au centre
+        color = Color.White, // Couleur du texte
+        fontSize = 16.sp, // Taille de la police
+        fontWeight = FontWeight.Medium // Poids de la police
     )
 }) { paddingValues ->
+    // Contenu principal de l'écran
 
+    // Boîte occupant tout l'espace disponible et centrée
     Box(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues),
-        contentAlignment = Alignment.Center
+            .fillMaxSize() // Remplissage de la taille maximale
+            .padding(paddingValues), // Marge intérieure
+        contentAlignment = Alignment.Center // Alignement du contenu au centre
     ) {
+        // Contenu animé basé sur l'état du message d'erreur
         AnimatedContent(targetState = state.error != null, label = "") {
+            // Si un message d'erreur est présent, affiche-le
             state.error?.let { error ->
                 Text(
-                    modifier = Modifier.padding(16.dp),
-                    text = error,
-                    textAlign = TextAlign.Center,
-                    color = Purple40,
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Medium,
-                    lineHeight = 36.sp
+                    modifier = Modifier.padding(16.dp), // Marge intérieure
+                    text = error, // Texte d'erreur
+                    textAlign = TextAlign.Center, // Alignement du texte au centre
+                    color = Purple40, // Couleur du texte
+                    fontSize = 32.sp, // Taille de la police
+                    fontWeight = FontWeight.Medium, // Poids de la police
+                    lineHeight = 36.sp // Hauteur de ligne
                 )
             } ?: LazyColumn {
+                // Si aucun message d'erreur, affiche la liste des personnages
 
-                items(state.characters) {
+                // Liste paresseuse affichant les éléments de l'état des personnages
+                itemsIndexed(state.characters) { index, character ->
+                    // Carte représentant chaque personnage
                     CharacterCard(
                         modifier = Modifier
-                            .padding(8.dp)
-                            .clickable {
-                                onAction(CharactersAction.SelectedCharacter(it))
+                            .padding(8.dp) // Marge extérieure
+                            .clickable { // Rendre la carte cliquable
+                                // Lorsque la carte est cliquée, effectuer une action sur le personnage sélectionné
+                                onAction(CharactersAction.SelectedCharacter(character))
                             },
-                        character = it
+                        character = character // Personnage à afficher dans la carte
                     )
+                    // Detect when scrolled to the bottom
+                    if (index == state.characters.size - 1) {
+                        onAction(CharactersAction.LoadMoreCharacters)
+                    }
                 }
-
             }
         }
     }
-
 }
 
+// Définition de la fonction composable CharacterCard
 @Composable
 private fun CharacterCard(
-    modifier: Modifier, character: Character
+    // Modifier permettant de définir les propriétés de la carte
+    modifier: Modifier,
+    // Caractère représentant les données à afficher dans la carte
+    character: Character
 ) =
+    // Création d'une rangée pour afficher les informations du personnage
     Row(
+        // Modifier permettant de définir les propriétés de la rangée
         modifier = modifier
+            // Ombre autour de la carte
             .shadow(5.dp)
+            // Fond blanc de la carte
             .background(Color.White)
+            // Remplissage maximal de la largeur
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-        ,
+            // Marge intérieure horizontale de 16dp et verticale de 12dp
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        // Alignement vertical du contenu au centre
         verticalAlignment = Alignment.CenterVertically
     ) {
-
+        // Affichage asynchrone de l'image du personnage
         SubcomposeAsyncImage(
+            // Modifier définissant la taille de l'image et son contour circulaire
             modifier = Modifier
                 .size(44.dp)
                 .clip(CircleShape),
+            // URL de l'image du personnage
             model = character.avatarUrl,
+            // Description de contenu nulle car l'image est décorative
             contentDescription = null
         )
 
+        // Espacement horizontal de 12dp
         Spacer(modifier = Modifier.width(12.dp))
 
+        // Affichage du nom du personnage
         Text(text = character.name)
-
     }
 
 
 
+// Fonction composable utilisée pour afficher un aperçu de l'écran des personnages
 @Preview
 @Composable
 private fun CharactersPreview() = PreviewContent {
+    // Affichage du contenu de l'écran des personnages dans l'aperçu
     CharactersContent()
 }
+
 

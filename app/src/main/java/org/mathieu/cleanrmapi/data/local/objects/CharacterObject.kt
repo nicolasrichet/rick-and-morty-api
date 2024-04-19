@@ -41,7 +41,8 @@ class CharacterObject(
     val locationName: String,
     val locationId: Int,
     val image: String,
-    val created: String
+    val created: String,
+    val episodeIds: List<Int>
 )
 
 
@@ -69,5 +70,9 @@ internal fun CharacterObject.toModel() = Character(
     gender = tryOrNull { CharacterGender.valueOf(gender) } ?: CharacterGender.Unknown,
     origin = originName to originId,
     location = locationName to locationId,
-    avatarUrl = image
+    avatarUrl = image,
+    episodes = emptyList()
 )
+
+internal fun CharacterObject.toModel(episodes : List<Episode>) =
+    this.toModel().copy(episodes = episodes)

@@ -6,9 +6,11 @@ import org.mathieu.cleanrmapi.data.local.objects.CharacterObject
 
 @Database(
     entities = [
+        CharacterObject::class,
+        EpisodeObject::class,
         CharacterObject::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class RMDatabase: RoomDatabase() {
@@ -17,6 +19,8 @@ abstract class RMDatabase: RoomDatabase() {
 
     companion object {
         const val CHARACTER_TABLE = "character_table"
+        const val EPISODE_TABLE = "episode_table"
+        const val CHARACTER_EPISODE_TABLE = "character_episode_table"
     }
 
 }

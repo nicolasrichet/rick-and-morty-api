@@ -8,18 +8,16 @@ import kotlinx.coroutines.flow.Flow
 import org.mathieu.cleanrmapi.data.local.objects.CharacterObject
 
 @Dao
-interface CharacterDAO {
-
-    @Query("select * from ${RMDatabase.CHARACTER_TABLE}")
-    fun getCharacters(): Flow<List<CharacterObject>>
-
-    @Query("select * from ${RMDatabase.CHARACTER_TABLE} where id = :id")
-    suspend fun getCharacter(id: Int): CharacterObject?
+interface EpisodeDAO {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun saveCharacters(characters: List<CharacterObject>)
+    suspend fun insert(episodes: List<EpisodeObject>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(character: CharacterObject)
+    suspend fun createLink(link: List<CharacterEpisodeObject>)
+
+
+    @Query("select * from ${RMDatabase.EPISODE_TABLE} where id in (select episodeId from ${RMDatabase.CHARACTER_EPISODE_TABLE} where characterId = :characterId)")
+    suspend fun getEpisodesForCharacter(characterId: Int): List<EpisodeObject>
 
 }

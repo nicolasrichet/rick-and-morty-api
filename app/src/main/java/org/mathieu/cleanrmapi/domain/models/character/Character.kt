@@ -22,7 +22,8 @@ data class Character(
     val gender: CharacterGender,
     val origin: Pair<String, Int>,
     val location: Pair<String, Int>,
-    val avatarUrl: String
+    val avatarUrl: String,
+    val episodes: List<Episode>
 )
 
 /**
@@ -38,3 +39,13 @@ enum class CharacterStatus {
 enum class CharacterGender {
     Female, Male, Genderless, Unknown
 }
+
+/**
+ * Represents an episode
+ */
+data class Episode(
+    val id: Int,
+    val name: String,
+    val airDate: String,
+    val episode: String,
+)

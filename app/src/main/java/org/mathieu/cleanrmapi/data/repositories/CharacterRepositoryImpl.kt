@@ -92,8 +92,6 @@ internal class CharacterRepositoryImpl(
                 obj.toModel()
             }
             ?: throw Exception("Character not found.")
-
-
 }
 
 
